@@ -32,24 +32,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const objectStore = transaction.objectStore('users');
 
         // Check if an admin already exists
-        if (accountType === 'admin') {
-            const index = objectStore.index('accountType');
-            const request = index.get('admin');
+        // if (accountType === 'admin') {
+        //     const index = objectStore.index('accountType');
+        //     const request = index.get('admin');
 
-            request.onsuccess = function(event) {
-                if (event.target.result) {
-                    alert('An admin already exists. Only one admin is allowed.');
-                } else {
-                    registerUser(email, password, accountType, objectStore);
-                }
-            };
+        //     request.onsuccess = function(event) {
+        //         if (event.target.result) {
+        //             displayMessage('registerMessage', 'An admin already exists. Only one admin is allowed.', 'error');
+        //         } else {
+        //             registerUser(email, password, accountType, objectStore);
+        //         }
+        //     };
 
-            request.onerror = function(event) {
-                console.error('Error checking for existing admin:', event.target.errorCode);
-            };
-        } else {
+        //     request.onerror = function(event) {
+        //         console.error('Error checking for existing admin:', event.target.errorCode);
+        //     };
+        // } else {
             registerUser(email, password, accountType, objectStore);
-        }
+        // }
     });
 
     // Function to register a new user
@@ -59,11 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const request = objectStore.add(user);
 
         request.onsuccess = function() {
-            alert('User registered successfully');
+            displayMessage('registerMessage', 'User registered successfully', 'success');
         };
 
         request.onerror = function(event) {
-            alert('Unable to register user');
+            displayMessage('registerMessage', 'Unable to register user', 'error');
             console.error('Error:', event.target.errorCode);
         };
     }
@@ -83,16 +83,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const user = event.target.result;
             const hashedPassword = CryptoJS.SHA256(password).toString();
             if (user && user.password === hashedPassword && user.accountType === accountType) {
-                alert('Login successful');
+                displayMessage('loginMessage', 'Login successful', 'success');
                 sessionStorage.setItem('user', JSON.stringify(user));
                 window.location.href = 'dashboard.html';
             } else {
-                alert('Invalid credentials');
+                displayMessage('loginMessage', 'Invalid credentials', 'error');
             }
         };
 
         request.onerror = function(event) {
-            alert('Unable to login');
+            displayMessage('loginMessage', 'Unable to login', 'error');
             console.error('Error:', event.target.errorCode);
         };
     });
@@ -101,11 +101,34 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('toRegister').addEventListener('click', () => {
         document.getElementById('login').classList.add('hidden');
         document.getElementById('register').classList.remove('hidden');
+        clearMessages();
     });
 
     // Switch to Login Form
     document.getElementById('toLogin').addEventListener('click', () => {
         document.getElementById('register').classList.add('hidden');
         document.getElementById('login').classList.remove('hidden');
+        clearMessages();
     });
+
+    // Function to display messages
+    function displayMessage(elementId, message, type) {
+        const messageDiv = document.getElementById(elementId);
+        messageDiv.classList.remove('hidden');
+        messageDiv.classList.add('text-white');
+        messageDiv.innerText = message;
+        if (type === 'success') {
+            messageDiv.classList.remove('bg-red-500');
+            messageDiv.classList.add('bg-green-500');
+        } else {
+            messageDiv.classList.remove('bg-green-500');
+            messageDiv.classList.add('bg-red-500');
+        }
+    }
+
+    // Function to clear messages
+    function clearMessages() {
+        document.getElementById('loginMessage').classList.add('hidden');
+        document.getElementById('registerMessage').classList.add('hidden');
+    }
 });
