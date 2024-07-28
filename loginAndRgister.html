@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login and Register</title>
+    <!-- For TailwindCss -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- For CryptoJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+</head>
+<body class="bg-gray-100">
+
+    <!-- Registration Form -->
+    <div id="register" class="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md hidden">
+        <h2 class="text-2xl font-bold mb-4">Register</h2>
+        <form id="registerForm">
+            <div class="mb-4">
+                <label class="block text-gray-700" for="regEmail">Email</label>
+                <input class="w-full p-2 border border-gray-300 rounded mt-2" type="email" id="regEmail" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700" for="regPassword">Password</label>
+                <input class="w-full p-2 border border-gray-300 rounded mt-2" type="password" id="regPassword" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700" for="regAccountType">Account Type</label>
+                <select class="w-full p-2 border border-gray-300 rounded mt-2" id="regAccountType" required>
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit">Register</button>
+            <button id="toLogin" class="w-full bg-gray-500 text-white py-2 rounded mt-4" type="button">Already have an account? Login</button>
+        </form>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login" class="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold mb-4">Login</h2>
+        <form id="loginForm">
+            <div class="mb-4">
+                <label class="block text-gray-700" for="loginEmail">Email</label>
+                <input class="w-full p-2 border border-gray-300 rounded mt-2" type="email" id="loginEmail" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700" for="loginPassword">Password</label>
+                <input class="w-full p-2 border border-gray-300 rounded mt-2" type="password" id="loginPassword" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700" for="loginAccountType">Account Type</label>
+                <select class="w-full p-2 border border-gray-300 rounded mt-2" id="loginAccountType" required>
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit">Login</button>
+            <button id="toRegister" class="w-full bg-gray-500 text-white py-2 rounded mt-4" type="button">Don't have an account? Register</button>
+        </form>
+    </div>
+
+    <script src="./loginAndRgister.js"></script>
+</body>
+</html>
