@@ -85,7 +85,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (user && user.password === hashedPassword && user.accountType === accountType) {
                 displayMessage('loginMessage', 'Login successful', 'success');
                 sessionStorage.setItem('user', JSON.stringify(user));
-                window.location.href = 'dashboard.html';
+                // window.location.href = 'dashboard.html';
+                if (accountType == 'admin') {
+                    window.location.href = './adminDashoard.html';
+                }
+                else{
+                    window.location.href = './ZWith_ListAndKanban.html';
+                }
             } else {
                 displayMessage('loginMessage', 'Invalid credentials', 'error');
             }

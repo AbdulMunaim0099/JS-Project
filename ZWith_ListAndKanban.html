@@ -8,6 +8,8 @@
     href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
     rel="stylesheet"
 />
+<!-- For Hash pasword Lib -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
 <style>
     .column {
     min-height: 400px;
@@ -39,6 +41,7 @@
     <div>
         <button id="requestManage" class="bg-blue-700 text-white px-4 py-2 rounded mr-2" > Request</button>
         <button id="addTask" class="bg-blue-700 text-white px-4 py-2 rounded mr-2" > Add Task</button>
+        <button id="profile" class="bg-blue-700 text-white px-4 py-2 rounded mr-2">Profile</button>
         <button id="logout" class="bg-red-500 text-white px-4 py-2 rounded"> Logout </button>
     </div>
     </div>
@@ -74,6 +77,49 @@
     </div>
     </div>
 
+</div>
+
+<!-- Profile Modal -->
+<div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold">Profile</h2>
+            <button id="closeProfile" class="text-gray-600 hover:text-gray-900">&times;</button>
+        </div>
+        <div>
+            <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+            <p><strong>Account Type:</strong> <span id="profileAccountType"></span></p>
+        </div>
+        <button id="editProfile" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Edit</button>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div id="editProfileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold">Edit Profile</h2>
+            <button id="closeEditProfile" class="text-gray-600 hover:text-gray-900">&times;</button>
+        </div>
+        <form id="editProfileForm">
+            <div class="mb-4">
+                <label class="block text-gray-700" for="editEmail">Email</label>
+                <input class="w-full p-2 border border-gray-300 rounded mt-2" type="email" id="editEmail" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700" for="editPassword">Password</label>
+                <input class="w-full p-2 border border-gray-300 rounded mt-2" type="password" id="editPassword">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700" for="editAccountType">Account Type</label>
+                <select class="w-full p-2 border border-gray-300 rounded mt-2" id="editAccountType" required>
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit">Save</button>
+        </form>
+    </div>
 </div>
 
 <!-- Add Task Modal -->
@@ -118,18 +164,53 @@
     </div>
 </div>
 
+<!-- Add Task Modal -->
+<div id="requestModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
+    <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold">Send Request</h2>
+        <button id="closeRequest" class="text-gray-600 hover:text-gray-900"> &times; </button>
+    </div>
+    <form id="sendRequestForm">
+        <div class="mb-4">
+            <label class="block text-gray-700" for="taskTitle">User Email</label>
+            <input class="w-full p-2 border border-gray-300 rounded mt-2" type="text" id="userID" required />
+        </div>
+        
+        <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit" > Add </button>
+    </form>
+    </div>
+</div>
+
 <!-- <script src="./ZxListAndKanban.js"></script> -->
 <script >
-        let redirect = (priorityFlag) =>{
-            // const myVariable = 'Hello, World!';
-            window.location.href = `./ZYdisplayPagee.html?myVariable=${encodeURIComponent(priorityFlag)}`;
+    
+    let redirect = (priorityFlag) =>{
+        // const myVariable = 'Hello, World!';
+        window.location.href = `./ZYdisplayPagee.html?myVariable=${encodeURIComponent(priorityFlag)}`;
+    }
+    
+    // let currentPriorityFilter = "do_first";
+    
+    document.addEventListener("DOMContentLoaded", function () {
+
+        document.getElementById('logout').addEventListener('click', () => {
+            sessionStorage.removeItem('user');
+            window.location.href = './loginAndRgister.html';
+        });
+
+        let user = JSON.parse(sessionStorage.getItem('user'));
+        if (!user) {
+            window.location.href = './loginAndRgister.html';
+        } else {
+            // document.getElementById('userDe  tails').innerText = `Welcome, ${user.email} (${user.accountType})`;
+            document.getElementById('profileEmail').innerText = user.email;
+            document.getElementById('profileAccountType').innerText = user.accountType;
         }
 
 
-        let db;
-    // let currentPriorityFilter = "do_first";
 
-    document.addEventListener("DOMContentLoaded", function () {
+        let db;
         const request = indexedDB.open("Tasks", 1);
 
         request.onerror = function (event) {
@@ -154,10 +235,11 @@
         };
 
         document.getElementById("addTask").addEventListener("click", openAddTaskModal);
-        // document.getElementById("addTaskList").addEventListener("click", openAddTaskModal);
         document.getElementById("closeAddTask").addEventListener("click", closeAddTaskModal);
         document.getElementById("addTaskForm").addEventListener("submit", addTask);
-        // document.getElementById("closeEditTask").addEventListener("click", closeEditTaskModal);
+        document.getElementById("requestManage").addEventListener("click", openRequestModal);
+        document.getElementById("closeRequest").addEventListener("click", closeRequestModal);
+        document.getElementById("sendRequestForm").addEventListener("submit", sendRequest);
         // document.getElementById("editTaskForm").addEventListener("submit", updateTask);
 
         // document.getElementById("toggleView").addEventListener("click", function () {
@@ -173,39 +255,194 @@
         //         this.textContent = "Switch to Kanban";
         //     }
         // });
+
+
+        function openAddTaskModal() {
+        document.getElementById("addTaskModal").classList.remove("hidden");
+        }
+    
+        function closeAddTaskModal() {
+            document.getElementById("addTaskModal").classList.add("hidden");
+        }
+    
+        function addTask(event) {
+            event.preventDefault();
+            const title = document.getElementById("taskTitle").value;
+            const dueDate = document.getElementById("taskDueDate").value;
+            const priority = document.getElementById("taskPriority").value;
+            const column = document.getElementById("taskList").value;
+    
+            const task = { title, dueDate, priority, column };
+    
+            const transaction = db.transaction(["tasks"], "readwrite");
+            const objectStore = transaction.objectStore("tasks");
+            const request = objectStore.add(task);
+    
+            request.onsuccess = function () {
+                closeAddTaskModal();
+                // loadTasks(task.priority);
+                // console.log("Done");
+            };
+    
+            request.onerror = function (event) {
+                console.error("Error:", event.target.errorCode);
+            };
+        }
+
+        let db2;
+
+        const request2 = indexedDB.open("Requests", 1);
+
+        request2.onerror = function (event) {
+            console.error("Database error:", event.target.errorCode);
+        };
+
+        request2.onsuccess = function (event) {
+            db2 = event.target.result;
+            // loadTasks(p);
+        };
+
+        request2.onupgradeneeded = function (event) {
+            db2 = event.target.result;
+            const objectStore = db2.createObjectStore("requests", {
+            keyPath: "id",
+            autoIncrement: true,
+            });
+            objectStore.createIndex("sender_Email", "sender_Email", { unique: false });
+            objectStore.createIndex("reciever_Email", "reciever_Email", { unique: false });
+            objectStore.createIndex("requestStatus", "requestStatus", { unique: false });
+        };
+    
+        
+        function openRequestModal() {
+            document.getElementById("requestModal").classList.remove("hidden");
+        }
+    
+        function closeRequestModal() {
+        document.getElementById("requestModal").classList.add("hidden");
+        }
+    
+        function sendRequest(event) {
+            event.preventDefault();
+            let user = JSON.parse(sessionStorage.getItem('user'));
+            let sender_Email = user.email;
+            let reciever_Email = document.getElementById("userID").value;
+            let requestStatus = "pending";
+    
+            const task = { sender_Email , reciever_Email, requestStatus };
+    
+            const transaction = db2.transaction(["requests"], "readwrite");
+            const objectStore = transaction.objectStore("requests");
+            const request = objectStore.add(task);
+    
+            request.onsuccess = function () {
+                closeRequestModal();
+                // loadTasks(task.priority);
+                console.log("Done");
+            };
+    
+            request.onerror = function (event) {
+                console.error("Error:", event.target.errorCode);
+            };
+        }
+        document.getElementById('profile').addEventListener('click', () => {
+            document.getElementById('profileModal').classList.remove('hidden');
+        });
+    
+        document.getElementById('closeProfile').addEventListener('click', () => {
+            document.getElementById('profileModal').classList.add('hidden');
+        });
+    
+        document.getElementById('profileModal').addEventListener('click', (event) => {
+            if (event.target === document.getElementById('profileModal')) {
+                document.getElementById('profileModal').classList.add('hidden');
+            }
+        });
+
+
+
+        document.getElementById('editProfile').addEventListener('click', () => {
+            document.getElementById('editEmail').value = user.email;
+            document.getElementById('editAccountType').value = user.accountType;
+            document.getElementById('profileModal').classList.add('hidden');
+            document.getElementById('editProfileModal').classList.remove('hidden');
+        });
+
+        document.getElementById('closeEditProfile').addEventListener('click', () => {
+            document.getElementById('editProfileModal').classList.add('hidden');
+        });
+
+        document.getElementById('editProfileModal').addEventListener('click', (event) => {
+            if (event.target === document.getElementById('editProfileModal')) {
+                document.getElementById('editProfileModal').classList.add('hidden');
+            }
+        });
+
+        let db3;
+        const request3 = indexedDB.open('UserDatabase', 1);
+
+        request3.onerror = function(event) {
+            console.error('Database error:', event.target.errorCode);
+        };
+
+        request3.onsuccess = function(event) {
+            db3 = event.target.result;
+        };
+
+        request3.onupgradeneeded = function(event) {
+            db3 = event.target.result;
+            const objectStore = db3.createObjectStore('users', { keyPath: 'email' });
+            objectStore.createIndex('email', 'email', { unique: true });
+            objectStore.createIndex('accountType', 'accountType', { unique: false });
+        };
+
+        document.getElementById('editProfileForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const newEmail = document.getElementById('editEmail').value;
+            const newPassword = document.getElementById('editPassword').value;
+            const newAccountType = document.getElementById('editAccountType').value;
+            const hashedPassword = newPassword ? CryptoJS.SHA256(newPassword).toString() : user.password;
+
+            const transaction = db3.transaction(['users'], 'readwrite');
+            const objectStore = transaction.objectStore('users');
+
+            // Delete the old record if the email has changed
+            if (newEmail !== user.email) {
+                objectStore.delete(user.email).onsuccess = function() {
+                    const request3 = objectStore.put({ email: newEmail, password: hashedPassword, accountType: newAccountType });
+
+                    request3.onsuccess = function() {
+                        sessionStorage.setItem('user', JSON.stringify({ email: newEmail, password: hashedPassword, accountType: newAccountType }));
+                        // displayMessage('editProfileMessage', 'Profile updated successfully', 'success');
+                        document.getElementById('editProfileModal').classList.add('hidden');
+                        window.location.reload();
+                    };
+
+                    request3.onerror = function(event) {
+                        // displayMessage('editProfileMessage', 'Unable to update profile', 'error');
+                        console.error('Error:', event.target.errorCode);
+                    };
+                };
+            } else {
+                const request3 = objectStore.put({ email: newEmail, password: hashedPassword, accountType: newAccountType });
+
+                request3.onsuccess = function() {
+                    sessionStorage.setItem('user', JSON.stringify({ email: newEmail, password: hashedPassword, accountType: newAccountType }));
+                    // displayMessage('editProfileMessage', 'Profile updated successfully', 'success');
+                    document.getElementById('editProfileModal').classList.add('hidden');
+                    window.location.reload();
+                };
+
+                request3.onerror = function(event) {
+                    // displayMessage('editProfileMessage', 'Unable to update profile', 'error');
+                    console.error('Error:', event.target.errorCode);
+                };
+            }
+        });
     });
 
-    function openAddTaskModal() {
-    document.getElementById("addTaskModal").classList.remove("hidden");
-    }
 
-    function closeAddTaskModal() {
-    document.getElementById("addTaskModal").classList.add("hidden");
-    }
 
-    function addTask(event) {
-        event.preventDefault();
-        const title = document.getElementById("taskTitle").value;
-        const dueDate = document.getElementById("taskDueDate").value;
-        const priority = document.getElementById("taskPriority").value;
-        const column = document.getElementById("taskList").value;
-
-        const task = { title, dueDate, priority, column };
-
-        const transaction = db.transaction(["tasks"], "readwrite");
-        const objectStore = transaction.objectStore("tasks");
-        const request = objectStore.add(task);
-
-        request.onsuccess = function () {
-            closeAddTaskModal();
-            // loadTasks(task.priority);
-            // console.log("Done");
-        };
-
-        request.onerror = function (event) {
-            console.error("Error:", event.target.errorCode);
-        };
-    }
 </script>
 </body>
 </html>
