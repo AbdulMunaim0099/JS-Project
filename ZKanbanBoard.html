@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Board</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .column {
+            min-height: 400px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 5px;
+            background-color: #f9f9f9;
+            overflow-y: auto; /* Allows scrolling if content overflows */
+        }
+        .draggable {
+            border: 1px solid #ddd;
+            background-color: #fff;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: move;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Navbar -->
+    <nav class="bg-blue-500 p-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <span class="text-white text-lg font-bold">Kanban Board</span>
+            <div>
+                <button id="dashboard" class="bg-blue-700 text-white px-4 py-2 rounded mr-2">Dashboard</button>
+                <button id="logout" class="bg-red-500 text-white px-4 py-2 rounded">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto mt-10">
+        <div class="flex">
+            <!-- Tasks Column -->
+            <div id="tasks" class="column flex-1" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h2 class="text-xl font-bold mb-4">Tasks</h2>
+                <button id="addTask" class="bg-green-500 text-white px-4 py-2 rounded mb-4">+ Add Task</button>
+                <div id="tasksContainer"></div>
+            </div>
+            <!-- Inprocess Column -->
+            <div id="inprocess" class="column flex-1" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h2 class="text-xl font-bold mb-4">Inprocess</h2>
+                <div id="inprocessContainer"></div>
+            </div>
+            <!-- Done Column -->
+            <div id="done" class="column flex-1" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <h2 class="text-xl font-bold mb-4">Done</h2>
+                <div id="doneContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div id="addTaskModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
+        <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Add Task</h2>
+                <button id="closeAddTask" class="text-gray-600 hover:text-gray-900">&times;</button>
+            </div>
+            <form id="addTaskForm">
+                <div class="mb-4">
+                    <label class="block text-gray-700" for="taskTitle">Title</label>
+                    <input class="w-full p-2 border border-gray-300 rounded mt-2" type="text" id="taskTitle" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700" for="taskDueDate">Due Date</label>
+                    <input class="w-full p-2 border border-gray-300 rounded mt-2" type="date" id="taskDueDate" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700" for="taskPriority">Priority</label>
+                    <select class="w-full p-2 border border-gray-300 rounded mt-2" id="taskPriority" required>
+                        <option value="do_first">Do First</option>
+                        <option value="do_next">Do Next</option>
+                        <option value="delegate">Delegate</option>
+                        <option value="eliminate">Eliminate</option>
+                    </select>
+                </div>
+                <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit">Add</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div id="editTaskModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
+        <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Edit Task</h2>
+                <button id="closeEditTask" class="text-gray-600 hover:text-gray-900">&times;</button>
+            </div>
+            <form id="editTaskForm">
+                <input type="hidden" id="editTaskId">
+                <div class="mb-4">
+                    <label class="block text-gray-700" for="editTaskTitle">Title</label>
+                    <input class="w-full p-2 border border-gray-300 rounded mt-2" type="text" id="editTaskTitle" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700" for="editTaskDueDate">Due Date</label>
+                    <input class="w-full p-2 border border-gray-300 rounded mt-2" type="date" id="editTaskDueDate" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700" for="editTaskPriority">Priority</label>
+                    <select class="w-full p-2 border border-gray-300 rounded mt-2" id="editTaskPriority" required>
+                        <option value="do_first">Do First</option>
+                        <option value="do_next">Do Next</option>
+                        <option value="delegate">Delegate</option>
+                        <option value="eliminate">Eliminate</option>
+                    </select>
+                </div>
+                <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit">Update</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let db;
+
+        function openAddTaskModal() {
+            document.getElementById('addTaskModal').classList.remove('hidden');
+        }
+
+        function closeAddTaskModal() {
+            document.getElementById('addTaskModal').classList.add('hidden');
+        }
+
+        function closeEditTaskModal() {
+            document.getElementById('editTaskModal').classList.add('hidden');
+        }
+
+        function openEditTaskModal(task) {
+            document.getElementById('editTaskId').value = task.id;
+            document.getElementById('editTaskTitle').value = task.title;
+            document.getElementById('editTaskDueDate').value = task.dueDate;
+            document.getElementById('editTaskPriority').value = task.priority;
+
+            document.getElementById('editTaskModal').classList.remove('hidden');
+        }
+
+        function addTask(event) {
+            event.preventDefault();
+            const title = document.getElementById('taskTitle').value;
+            const dueDate = document.getElementById('taskDueDate').value;
+            const priority = document.getElementById('taskPriority').value;
+
+            const task = {
+                title,
+                dueDate,
+                priority,
+                column: 'tasks' // Default column
+            };
+
+            const transaction = db.transaction(['tasks'], 'readwrite');
+            const objectStore = transaction.objectStore('tasks');
+            const request = objectStore.add(task);
+
+            request.onsuccess = function() {
+                closeAddTaskModal();
+                loadTasks();
+            };
+
+            request.onerror = function(event) {
+                console.error('Error:', event.target.errorCode);
+            };
+        }
+
+        function updateTask(event) {
+            event.preventDefault();
+            const id = parseInt(document.getElementById('editTaskId').value);
+            const title = document.getElementById('editTaskTitle').value;
+            const dueDate = document.getElementById('editTaskDueDate').value;
+            const priority = document.getElementById('editTaskPriority').value;
+
+            const transaction = db.transaction(['tasks'], 'readwrite');
+            const objectStore = transaction.objectStore('tasks');
+            const request = objectStore.get(id);
+
+            request.onsuccess = function(event) {
+                const task = event.target.result;
+                task.title = title;
+                task.dueDate = dueDate;
+                task.priority = priority;
+
+                const updateRequest = objectStore.put(task);
+
+                updateRequest.onsuccess = function() {
+                    closeEditTaskModal();
+                    loadTasks();
+                };
+
+                updateRequest.onerror = function(event) {
+                    console.error('Error:', event.target.errorCode);
+                };
+            };
+
+            request.onerror = function(event) {
+                console.error('Error:', event.target.errorCode);
+            };
+        }
+
+        function loadTasks() {
+            const transaction = db.transaction(['tasks'], 'readonly');
+            const objectStore = transaction.objectStore('tasks');
+            const request = objectStore.getAll();
+
+            request.onsuccess = function(event) {
+                const tasks = event.target.result;
+                document.getElementById('tasksContainer').innerHTML = '';
+                document.getElementById('inprocessContainer').innerHTML = '';
+                document.getElementById('doneContainer').innerHTML = '';
+
+                tasks.forEach(task => {
+                    const taskElement = document.createElement('div');
+                    taskElement.className = 'draggable';
+                    taskElement.draggable = true;
+                    taskElement.dataset.id = task.id;
+                    taskElement.innerHTML = `
+                        <p><strong>${task.title}</strong></p>
+                        <p>Due: ${task.dueDate}</p>
+                        <p>Priority: ${task.priority}</p>
+                        <p>Column: ${task.column}</p>
+                        <button class="bg-blue-500 text-white px-2 py-1 rounded mr-2" onclick='openEditTaskModal(${JSON.stringify(task)})'>Update</button>
+                        <button class="bg-red-500 text-white px-2 py-1 rounded" onclick="deleteTask(${task.id})">Delete</button>
+                    `;
+
+                    if (task.column === 'tasks') {
+                        document.getElementById('tasksContainer').appendChild(taskElement);
+                    } else if (task.column === 'inprocess') {
+                        document.getElementById('inprocessContainer').appendChild(taskElement);
+                    } else if (task.column === 'done') {
+                        document.getElementById('doneContainer').appendChild(taskElement);
+                    }
+                });
+            };
+
+            request.onerror = function(event) {
+                console.error('Error:', event.target.errorCode);
+            };
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            const taskId = parseInt(event.dataTransfer.getData('text'));
+            const column = event.target.id;
+
+            if (!['tasks', 'inprocess', 'done'].includes(column)) return;
+
+            const transaction = db.transaction(['tasks'], 'readwrite');
+            const objectStore = transaction.objectStore('tasks');
+            const request = objectStore.get(taskId);
+
+            request.onsuccess = function(event) {
+                const task = event.target.result;
+                task.column = column;
+
+                const updateRequest = objectStore.put(task);
+
+                updateRequest.onsuccess = function() {
+                    loadTasks();
+                };
+
+                updateRequest.onerror = function(event) {
+                    console.error('Error:', event.target.errorCode);
+                };
+            };
+
+            request.onerror = function(event) {
+                console.error('Error:', event.target.errorCode);
+            };
+        }
+
+        function deleteTask(id) {
+            const transaction = db.transaction(['tasks'], 'readwrite');
+            const objectStore = transaction.objectStore('tasks');
+            const request = objectStore.delete(id);
+
+            request.onsuccess = function() {
+                loadTasks();
+            };
+
+            request.onerror = function(event) {
+                console.error('Error:', event.target.errorCode);
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const request = indexedDB.open('Tasks', 1);
+
+            request.onerror = function(event) {
+                console.error('Database error:', event.target.errorCode);
+            };
+
+            request.onsuccess = function(event) {
+                db = event.target.result;
+                loadTasks();
+            };
+
+            request.onupgradeneeded = function(event) {
+                db = event.target.result;
+                const objectStore = db.createObjectStore('tasks', { keyPath: 'id', autoIncrement: true });
+                objectStore.createIndex('title', 'title', { unique: false });
+                objectStore.createIndex('dueDate', 'dueDate', { unique: false });
+                objectStore.createIndex('priority', 'priority', { unique: false });
+                objectStore.createIndex('column', 'column', { unique: false });
+            };
+
+            document.getElementById('addTask').addEventListener('click', openAddTaskModal);
+            document.getElementById('closeAddTask').addEventListener('click', closeAddTaskModal);
+            document.getElementById('addTaskForm').addEventListener('submit', addTask);
+            document.getElementById('closeEditTask').addEventListener('click', closeEditTaskModal);
+            document.getElementById('editTaskForm').addEventListener('submit', updateTask);
+        });
+
+        document.addEventListener('dragstart', function(event) {
+            if (event.target.classList.contains('draggable')) {
+                event.dataTransfer.setData('text', event.target.dataset.id);
+            }
+        });
+    </script>
+</body>
+</html>

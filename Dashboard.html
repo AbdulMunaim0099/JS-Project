@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <!-- FOR TailwindCss -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- For Hash pasword Lib -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
 </head>
 <body class="bg-gray-100">
      <!-- Navbar -->
@@ -41,8 +44,8 @@
         </div>
     </div>
 
-    <!-- Profile Modal -->
-    <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
+     <!-- Profile Modal -->
+     <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
         <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-bold">Profile</h2>
@@ -52,6 +55,35 @@
                 <p><strong>Email:</strong> <span id="profileEmail"></span></p>
                 <p><strong>Account Type:</strong> <span id="profileAccountType"></span></p>
             </div>
+            <button id="editProfile" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Edit</button>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
+        <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Edit Profile</h2>
+                <button id="closeEditProfile" class="text-gray-600 hover:text-gray-900">&times;</button>
+            </div>
+            <form id="editProfileForm">
+                <div class="mb-4">
+                    <label class="block text-gray-700" for="editEmail">Email</label>
+                    <input class="w-full p-2 border border-gray-300 rounded mt-2" type="email" id="editEmail" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700" for="editPassword">Password</label>
+                    <input class="w-full p-2 border border-gray-300 rounded mt-2" type="password" id="editPassword">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700" for="editAccountType">Account Type</label>
+                    <select class="w-full p-2 border border-gray-300 rounded mt-2" id="editAccountType" required>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit">Save</button>
+            </form>
         </div>
     </div>
 
