@@ -1,5 +1,3 @@
-// app.js
-
 document.addEventListener('DOMContentLoaded', () => {
     // IndexedDB setup
     let db;
@@ -30,26 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const transaction = db.transaction(['users'], 'readwrite');
         const objectStore = transaction.objectStore('users');
-
-        // Check if an admin already exists
-        // if (accountType === 'admin') {
-        //     const index = objectStore.index('accountType');
-        //     const request = index.get('admin');
-
-        //     request.onsuccess = function(event) {
-        //         if (event.target.result) {
-        //             displayMessage('registerMessage', 'An admin already exists. Only one admin is allowed.', 'error');
-        //         } else {
-        //             registerUser(email, password, accountType, objectStore);
-        //         }
-        //     };
-
-        //     request.onerror = function(event) {
-        //         console.error('Error checking for existing admin:', event.target.errorCode);
-        //     };
-        // } else {
-            registerUser(email, password, accountType, objectStore);
-        // }
+        registerUser(email, password, accountType, objectStore);
     });
 
     // Function to register a new user
@@ -85,11 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (user && user.password === hashedPassword && user.accountType === accountType) {
                 displayMessage('loginMessage', 'Login successful', 'success');
                 sessionStorage.setItem('user', JSON.stringify(user));
-                // window.location.href = 'dashboard.html';
-                if (accountType == 'admin') {
+                // Redirect based on account type
+                if (accountType === 'admin') {
                     window.location.href = './adminDashoard.html';
-                }
-                else{
+                } else {
                     window.location.href = './ZWith_ListAndKanban.html';
                 }
             } else {
@@ -103,16 +81,67 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     });
 
+    // Forgot Password Form Submission
+    document.getElementById('forgotPasswordForm').addEventListener('submit', (event) => {
+        event.preventDefault();
+        const email = document.getElementById('forgotEmail').value;
+        const newPassword = document.getElementById('newPassword').value;
+
+        const transaction = db.transaction(['users'], 'readwrite');
+        const objectStore = transaction.objectStore('users');
+        const request = objectStore.get(email);
+
+        request.onsuccess = function(event) {
+            const user = event.target.result;
+            if (user) {
+                user.password = CryptoJS.SHA256(newPassword).toString();
+                const updateRequest = objectStore.put(user);
+
+                updateRequest.onsuccess = function() {
+                    displayMessage('forgotPasswordMessage', 'Password reset successfully', 'success');
+                };
+
+                updateRequest.onerror = function(event) {
+                    displayMessage('forgotPasswordMessage', 'Unable to reset password', 'error');
+                    console.error('Error:', event.target.errorCode);
+                };
+            } else {
+                displayMessage('forgotPasswordMessage', 'Email not found', 'error');
+            }
+        };
+
+        request.onerror = function(event) {
+            displayMessage('forgotPasswordMessage', 'Unable to reset password', 'error');
+            console.error('Error:', event.target.errorCode);
+        };
+    });
+
     // Switch to Register Form
     document.getElementById('toRegister').addEventListener('click', () => {
         document.getElementById('login').classList.add('hidden');
         document.getElementById('register').classList.remove('hidden');
+        document.getElementById('forgotPassword').classList.add('hidden');
         clearMessages();
     });
 
     // Switch to Login Form
     document.getElementById('toLogin').addEventListener('click', () => {
         document.getElementById('register').classList.add('hidden');
+        document.getElementById('login').classList.remove('hidden');
+        document.getElementById('forgotPassword').classList.add('hidden');
+        clearMessages();
+    });
+
+    // Switch to Forgot Password Form
+    document.getElementById('toForgotPassword').addEventListener('click', () => {
+        document.getElementById('login').classList.add('hidden');
+        document.getElementById('forgotPassword').classList.remove('hidden');
+        clearMessages();
+    });
+
+    // Back to Login Form from Forgot Password
+    document.getElementById('backToLogin').addEventListener('click', () => {
+        document.getElementById('forgotPassword').classList.add('hidden');
         document.getElementById('login').classList.remove('hidden');
         clearMessages();
     });
@@ -136,5 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function clearMessages() {
         document.getElementById('loginMessage').classList.add('hidden');
         document.getElementById('registerMessage').classList.add('hidden');
+        document.getElementById('forgotPasswordMessage').classList.add('hidden');
     }
 });

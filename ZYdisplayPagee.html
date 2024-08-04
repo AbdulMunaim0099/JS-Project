@@ -31,18 +31,22 @@
         <div class="flex gap-10 justify-center">
             <!-- Tasks Column -->
             <div id="tasks" class="column flex flex-col border-2 rounded-xl p-5 pb-28 w-96 bg-white" ondrop="drop(event)" ondragover="allowDrop(event)">
-                <h2 class="text-xl font-bold mb-4">Tasks</h2>
-                <div id="tasksContainer"></div>
+                <h2 class="text-xl font-bold mb-4 flex justify-between">Tasks
+                    <div id="tasks_count" >0</div>
+                </h2>
+                <div id="tasksContainer" class="flex flex-col gap-5"></div> 
             </div>
             <!-- Inprocess Column -->
             <div id="inprocess" class="column flex flex-col border-2 rounded-xl p-5 pb-28 w-96 bg-white" ondrop="drop(event)" ondragover="allowDrop(event)">
-                <h2 class="text-xl font-bold mb-4">Inprocess</h2>
-                <div id="inprocessContainer"></div>
+                <h2 class="text-xl font-bold mb-4 flex justify-between">Inprocess
+                    <div id="inProcess_count" >0</div>
+                </h2>
+                <div id="inprocessContainer" class="flex flex-col gap-5"></div>
             </div>
             <!-- Done Column -->
             <div id="done" class="column flex flex-col border-2 rounded-xl p-5 pb-28 w-96 bg-white" ondrop="drop(event)" ondragover="allowDrop(event)">
-                <h2 class="text-xl font-bold mb-4">Done</h2>
-                <div id="doneContainer"></div>
+                <h2 class="text-xl font-bold mb-4 flex justify-between">Done</h2>
+                <div id="doneContainer" class="flex flex-col gap-5"></div>
             </div>
         </div>
     </div>
@@ -97,14 +101,14 @@
                 <option value="eliminate">Eliminate</option>
             </select>
             </div>
-            <div class="mb-4">
-            <label class="block text-gray-700" for="taskList">List</label>
-            <select class="w-full p-2 border border-gray-300 rounded mt-2" id="taskList" required>
-                <option value="tasks">Task</option>
-                <option value="inprocess">Inprocess</option>
-                <option value="done">Done</option>
-            </select>
-            </div>
+            <!-- <div class="mb-4">
+                <label class="block text-gray-700" for="taskList">List</label>
+                <select class="w-full p-2 border border-gray-300 rounded mt-2" id="taskList" required>
+                    <option value="tasks">Task</option>
+                    <option value="inprocess">Inprocess</option>
+                    <option value="done">Done</option>
+                </select>
+            </div> -->
             <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit" >
             Add
             </button>
@@ -139,12 +143,12 @@
             </select>
             </div>
             <div class="mb-4">
-            <label class="block text-gray-700" for="editTaskList">List</label>
-            <select class="w-full p-2 border border-gray-300 rounded mt-2" id="editTaskList" required>
-                <option value="tasks">Task</option>
-                <option value="inprocess">Inprocess</option>
-                <option value="done">Done</option>
-            </select>
+                <label class="block text-gray-700" for="editTaskList">List</label>
+                <select class="w-full p-2 border border-gray-300 rounded mt-2" id="editTaskList" required>
+                    <option value="tasks">Task</option>
+                    <option value="inprocess">Inprocess</option>
+                    <option value="done">Done</option>
+                </select>
             </div>
             <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit" > Update </button>
         </form>

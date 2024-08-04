@@ -4,6 +4,17 @@ let db;
     // let currentPriorityFilter = "do_first";
 
 document.addEventListener("DOMContentLoaded", function () {
+
+    let user = JSON.parse(sessionStorage.getItem('user'));
+    if (!user) {
+        window.location.href = './loginAndRgister.html';
+    }
+
+    document.getElementById('logout').addEventListener('click', () => {
+        sessionStorage.removeItem('user');
+        window.location.href = './loginAndRgister.html';
+    });
+
     const request = indexedDB.open("Tasks", 1);
 
     request.onerror = function (event) {
@@ -58,12 +69,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function openEditTaskModal(task) {
-    document.getElementById("editTaskId").value = task.id;
-    document.getElementById("editTaskTitle").value = task.title;
-    document.getElementById("editTaskDueDate").value = task.dueDate;
-    document.getElementById("editTaskPriority").value = task.priority;
-    document.getElementById("editTaskList").value = task.column;
-    document.getElementById("editTaskModal").classList.remove("hidden");
+        document.getElementById("editTaskId").value = task.id;
+        document.getElementById("editTaskTitle").value = task.title;
+        document.getElementById("editTaskDueDate").value = task.dueDate;
+        document.getElementById("editTaskPriority").value = task.priority;
+        // document.getElementById("editTaskList").value = task.column;
+        document.getElementById("editTaskModal").classList.remove("hidden");
     }
 
     function closeEditTaskModal() {
@@ -75,7 +86,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const title = document.getElementById("taskTitle").value;
     const dueDate = document.getElementById("taskDueDate").value;
     const priority = document.getElementById("taskPriority").value;
-    const column = document.getElementById("taskList").value;
+    const column = 'tasks';
 
     const task = { title, dueDate, priority, column };
 
@@ -84,6 +95,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const request = objectStore.add(task);
 
     request.onsuccess = function () {
+
+        document.getElementById("taskTitle").value = null;
+        document.getElementById("taskDueDate").value = null;
+        document.getElementById("taskPriority").value = null;
+        document.getElementById("taskList").value = null;
         closeAddTaskModal();
         loadTasks(task.priority);
     };
@@ -115,8 +131,13 @@ document.addEventListener("DOMContentLoaded", function () {
         const updateRequest = objectStore.put(task);
 
         updateRequest.onsuccess = function () {
-        closeEditTaskModal();
-        loadTasks(task.priority);
+            document.getElementById("editTaskId").value = null;
+            document.getElementById("editTaskTitle").value = null;
+            document.getElementById("editTaskDueDate").value = null;
+            document.getElementById("editTaskPriority").value = null;
+            document.getElementById("editTaskList").value = null;
+            closeEditTaskModal();
+            loadTasks(task.priority);
         };
 
         updateRequest.onerror = function (event) {
@@ -130,88 +151,125 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function loadTasks(currentPriorityFilter) {
-    const transaction = db.transaction(["tasks"], "readonly");
-    const objectStore = transaction.objectStore("tasks");
-    const request = objectStore.getAll();
+        const transaction = db.transaction(["tasks"], "readonly");
+        const objectStore = transaction.objectStore("tasks");
+        const request = objectStore.getAll();
 
-    request.onsuccess = function (event) {
-        const tasks = event.target.result;
+        request.onsuccess = function (event) {
+            const tasks = event.target.result;
 
-        // Clear existing tasks
-        document.getElementById("tasksContainer").innerHTML = "";
-        document.getElementById("inprocessContainer").innerHTML = "";
-        document.getElementById("doneContainer").innerHTML = "";
-        document.getElementById("taskTableBody").innerHTML = "";
+            // Clear existing tasks
+            document.getElementById("tasksContainer").innerHTML = "";
+            document.getElementById("inprocessContainer").innerHTML = "";
+            document.getElementById("doneContainer").innerHTML = "";
+            document.getElementById("taskTableBody").innerHTML = "";
+            let user = JSON.parse(sessionStorage.getItem('user'));
+            let email = user.email;
+            let index = 0;
+            tasks.forEach((task) => {
+                if (task.email == email) {
+                    
+                    if (task.priority !== currentPriorityFilter) {
+                        return;
+                    }
+        
+                    // console.log(index-1);
+                    if (index == 0) {
+                        
+                        countTask(task.priority);
+                        // console.log(task.priority);
+                    }
+                    index++;
 
-        tasks.forEach((task) => {
-        if (task.priority !== currentPriorityFilter) {
-            return;
-        }
+                    const taskElement = document.createElement("div");
+                    taskElement.className = "draggable border w-full rounded-lg p-4 flex flex-col gap-3";
+                    taskElement.draggable = true;
+                    taskElement.dataset.id = task.id;
+                    taskElement.innerHTML = `
+                            <p><strong>${task.title}</strong></p>
+                            <p>Due: ${task.dueDate}</p>
+                            <p>Priority: ${task.priority}</p>
+                            <p>List: ${task.column}</p>
+                            <button class="bg-blue-500 text-white px-2 py-1 rounded mr-2" onclick='openEditTaskModal(${JSON.stringify(
+                                task
+                            )})'>Update</button>
+                            <button class="bg-red-500 text-white px-2 py-1 rounded" onclick="deleteTask(${
+                                task.id
+                            })">Delete</button>
+                        `;
+        
+                    const rowElement = document.createElement("tr");
+                    rowElement.innerHTML = `
+                            <td class="py-2 px-4 border-b border-gray-200">${
+                                task.id
+                            }</td>
+                            <td class="py-2 px-4 border-b border-gray-200">${
+                                task.title
+                            }</td>
+                            <td class="py-2 px-4 border-b border-gray-200">${
+                                task.dueDate
+                            }</td>
+                            <td class="py-2 px-4 border-b border-gray-200">${
+                                task.priority
+                            }</td>
+                            <td class="py-2 px-4 border-b border-gray-200">${
+                                task.column
+                            }</td>
+                            <td class="py-2 px-4 border-b border-gray-200">
+                                <button class="bg-blue-500 text-white px-2 py-1 rounded mr-2" onclick='openEditTaskModal(${JSON.stringify(
+                                    task
+                                )})'>Update</button>
+                                <button class="bg-red-500 text-white px-2 py-1 rounded" onclick="deleteTask(${
+                                    task.id
+                                })">Delete</button>
+                            </td>
+                        `;
+        
+                    if (task.column === "tasks") {
+                        document
+                        .getElementById("tasksContainer")
+                        .appendChild(taskElement);
+                    } else if (task.column === "inprocess") {
+                        document
+                        .getElementById("inprocessContainer")
+                        .appendChild(taskElement);
+                    } else if (task.column === "done") {
+                        document.getElementById("doneContainer").appendChild(taskElement);
+                    }
+        
+                    document.getElementById("taskTableBody").appendChild(rowElement);
+                }
+            });
+            
+        };
 
-        const taskElement = document.createElement("div");
-        taskElement.className = "draggable border w-full rounded-lg p-4 flex flex-col gap-3";
-        taskElement.draggable = true;
-        taskElement.dataset.id = task.id;
-        taskElement.innerHTML = `
-                <p><strong>${task.title}</strong></p>
-                <p>Due: ${task.dueDate}</p>
-                <p>Priority: ${task.priority}</p>
-                <p>List: ${task.column}</p>
-                <button class="bg-blue-500 text-white px-2 py-1 rounded mr-2" onclick='openEditTaskModal(${JSON.stringify(
-                    task
-                )})'>Update</button>
-                <button class="bg-red-500 text-white px-2 py-1 rounded" onclick="deleteTask(${
-                    task.id
-                })">Delete</button>
-            `;
-
-        const rowElement = document.createElement("tr");
-        rowElement.innerHTML = `
-                <td class="py-2 px-4 border-b border-gray-200">${
-                    task.id
-                }</td>
-                <td class="py-2 px-4 border-b border-gray-200">${
-                    task.title
-                }</td>
-                <td class="py-2 px-4 border-b border-gray-200">${
-                    task.dueDate
-                }</td>
-                <td class="py-2 px-4 border-b border-gray-200">${
-                    task.priority
-                }</td>
-                <td class="py-2 px-4 border-b border-gray-200">${
-                    task.column
-                }</td>
-                <td class="py-2 px-4 border-b border-gray-200">
-                    <button class="bg-blue-500 text-white px-2 py-1 rounded mr-2" onclick='openEditTaskModal(${JSON.stringify(
-                        task
-                    )})'>Update</button>
-                    <button class="bg-red-500 text-white px-2 py-1 rounded" onclick="deleteTask(${
-                        task.id
-                    })">Delete</button>
-                </td>
-            `;
-
-        if (task.column === "tasks") {
-            document
-            .getElementById("tasksContainer")
-            .appendChild(taskElement);
-        } else if (task.column === "inprocess") {
-            document
-            .getElementById("inprocessContainer")
-            .appendChild(taskElement);
-        } else if (task.column === "done") {
-            document.getElementById("doneContainer").appendChild(taskElement);
-        }
-
-        document.getElementById("taskTableBody").appendChild(rowElement);
-        });
-    };
-
-    request.onerror = function (event) {
-        console.error("Error:", event.target.errorCode);
-    };
+        request.onerror = function (event) {
+            console.error("Error:", event.target.errorCode);
+        };
     }
+
+    // Function to count tasks
+    const countTask = (priority) => {
+        let user = JSON.parse(sessionStorage.getItem('user'));
+        let email = user.email;
+        const transaction = db.transaction(["tasks"], "readonly");
+        const objectStore = transaction.objectStore("tasks");
+        const request = objectStore.getAll();
+
+        request.onsuccess = function(event) {
+            const tasks = event.target.result;
+            const userTasks = tasks.filter(task => task.email === email && task.priority === priority);
+            const tasksColumnCount = userTasks.filter(task => task.column === 'tasks').length;
+            const inprocessColumnCount = userTasks.filter(task => task.column === 'inprocess').length;
+
+            document.getElementById('tasks_count').innerText = tasksColumnCount;
+            document.getElementById('inProcess_count').innerText = inprocessColumnCount;
+        };
+
+        request.onerror = function(event) {
+            console.error("Error fetching tasks:", event.target.errorCode);
+        };
+    };
 
     // function filterTasks(priority) {
     //     window.location.href = './ZYdisplayPagee.html';

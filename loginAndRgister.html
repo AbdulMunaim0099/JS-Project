@@ -58,6 +58,25 @@
             </div>
             <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit">Login</button>
             <button id="toRegister" class="w-full bg-gray-500 text-white py-2 rounded mt-4" type="button">Don't have an account? Register</button>
+            <button id="toForgotPassword" class="w-full bg-yellow-500 text-white py-2 rounded mt-4" type="button">Forgot Password?</button>
+        </form>
+    </div>
+
+    <!-- Forgot Password Form -->
+    <div id="forgotPassword" class="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md hidden">
+        <h2 class="text-2xl font-bold mb-4">Forgot Password</h2>
+        <div id="forgotPasswordMessage" class="hidden p-2 mb-4 rounded"></div>
+        <form id="forgotPasswordForm">
+            <div class="mb-4">
+                <label class="block text-gray-700" for="forgotEmail">Email</label>
+                <input class="w-full p-2 border border-gray-300 rounded mt-2" type="email" id="forgotEmail" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700" for="newPassword">New Password</label>
+                <input class="w-full p-2 border border-gray-300 rounded mt-2" type="password" id="newPassword" required>
+            </div>
+            <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit">Reset Password</button>
+            <button id="backToLogin" class="w-full bg-gray-500 text-white py-2 rounded mt-4" type="button">Back to Login</button>
         </form>
     </div>
 

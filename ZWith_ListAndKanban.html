@@ -12,24 +12,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
 <style>
     .column {
-    min-height: 400px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 10px;
-    margin: 5px;
-    background-color: #f9f9f9;
-    overflow-y: auto;
+        min-height: 400px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 10px;
+        margin: 5px;
+        background-color: #f9f9f9;
+        overflow-y: auto;
     }
     .draggable {
-    border: 1px solid #ddd;
-    background-color: #fff;
-    border-radius: 4px;
-    padding: 10px;
-    margin-bottom: 10px;
-    cursor: move;
+        border: 1px solid #ddd;
+        background-color: #fff;
+        border-radius: 4px;
+        padding: 10px;
+        margin-bottom: 10px;
+        cursor: move;
     }
     .hidden {
-    display: none;
+        display: none;
     }
 </style>
 </head>
@@ -51,33 +51,26 @@
 <div class="max-w-7xl mx-auto mt-10">
     <!-- Cards for Priority Flags -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-    <div
-        class="card bg-white p-6 rounded-lg shadow-lg text-center cursor-pointer"
-        onclick="redirect('do_first')"
-    >
-        <h2 class="text-2xl font-bold text-blue-500">Do First</h2>
-    </div>
-    <div
-        class="card bg-white p-6 rounded-lg shadow-lg text-center cursor-pointer"
-        onclick="redirect('do_next')"
-    >
-        <h2 class="text-2xl font-bold text-green-500">Do Next</h2>
-    </div>
-    <div
-        class="card bg-white p-6 rounded-lg shadow-lg text-center cursor-pointer"
-        onclick="redirect('delegate')"
-    >
-        <h2 class="text-2xl font-bold text-yellow-500">Delegate</h2>
-    </div>
-    <div
-        class="card bg-white p-6 rounded-lg shadow-lg text-center cursor-pointer"
-        onclick="redirect('eliminate')"
-    >
-        <h2 class="text-2xl font-bold text-red-500">Eliminate</h2>
-    </div>
+        <div class="card flex flex-col gap-4 bg-white text-blue-500 p-6 rounded-lg shadow-lg text-center cursor-pointer" onclick="redirect('do_first')" >
+            <h2 class="text-3xl font-bold">Do First</h2>
+            <div id="doFirst_count" class="text-6xl font-semibold">0</div>
+        </div>
+        <div class="card flex flex-col gap-4 bg-white text-green-500 p-6 rounded-lg shadow-lg text-center cursor-pointer" onclick="redirect('do_next')" >
+            <h2 class="text-3xl font-bold">Do Next</h2>
+            <div id="doNext_count" class="text-6xl font-semibold">0</div>
+        </div>
+        <div class="card flex flex-col gap-4 bg-white text-yellow-500 p-6 rounded-lg shadow-lg text-center cursor-pointer" onclick="redirect('delegate')" >
+            <h2 class="text-3xl font-bold">Delegate</h2>
+            <div id="delegate_count" class="text-6xl font-semibold">0</div>
+        </div>
+        <div class="card flex flex-col gap-4 bg-white text-red-500 p-6 rounded-lg shadow-lg text-center cursor-pointer" onclick="redirect('eliminate')" >
+            <h2 class="text-3xl font-bold">Eliminate</h2>
+            <div id="eliminate_count" class="text-6xl font-semibold">0</div>
+        </div>
     </div>
 
 </div>
+
 
 <!-- Profile Modal -->
 <div id="profileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
@@ -151,20 +144,20 @@
             <option value="eliminate">Eliminate</option>
         </select>
         </div>
-        <div class="mb-4">
-        <label class="block text-gray-700" for="taskList">List</label>
-        <select class="w-full p-2 border border-gray-300 rounded mt-2" id="taskList" required>
-            <option value="tasks">Task</option>
-            <option value="inprocess">Inprocess</option>
-            <option value="done">Done</option>
-        </select>
-        </div>
+        <!-- <div class="mb-4">
+            <label class="block text-gray-700" for="taskList">List</label>
+            <select class="w-full p-2 border border-gray-300 rounded mt-2" id="taskList" required>
+                <option value="tasks">Task</option>
+                <option value="inprocess">Inprocess</option>
+                <option value="done">Done</option>
+            </select>
+        </div> -->
         <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit" > Add </button>
     </form>
     </div>
 </div>
 
-<!-- Add Task Modal -->
+<!-- Add Request Modal -->
 <div id="requestModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
     <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
     <div class="flex justify-between items-center mb-4">
@@ -176,7 +169,7 @@
             <label class="block text-gray-700" for="taskTitle">User Email</label>
             <input class="w-full p-2 border border-gray-300 rounded mt-2" type="text" id="userID" required />
         </div>
-        
+        <div id="requestMessage" class="hidden mt-4 p-2 rounded"></div>
         <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit" > Add </button>
     </form>
     </div>
@@ -209,7 +202,7 @@
         }
 
 
-
+        // TO ADD TASKS
         let db;
         const request = indexedDB.open("Tasks", 1);
 
@@ -220,6 +213,7 @@
         request.onsuccess = function (event) {
             db = event.target.result;
             // loadTasks(p);
+            countTask();
         };
 
         request.onupgradeneeded = function (event) {
@@ -232,6 +226,7 @@
             objectStore.createIndex("dueDate", "dueDate", { unique: false });
             objectStore.createIndex("priority", "priority", { unique: false });
             objectStore.createIndex("column", "column", { unique: false });
+            objectStore.createIndex("email", "email", { unique: false });
         };
 
         document.getElementById("addTask").addEventListener("click", openAddTaskModal);
@@ -240,6 +235,44 @@
         document.getElementById("requestManage").addEventListener("click", openRequestModal);
         document.getElementById("closeRequest").addEventListener("click", closeRequestModal);
         document.getElementById("sendRequestForm").addEventListener("submit", sendRequest);
+
+
+        // Function to count tasks
+        const countTask = () => {
+            let user = JSON.parse(sessionStorage.getItem('user'));
+            let email = user.email;
+            const transaction = db.transaction(["tasks"], "readonly");
+            const objectStore = transaction.objectStore("tasks");
+            const request = objectStore.getAll();
+
+            request.onsuccess = function(event) {
+                const tasks = event.target.result;
+                const userTasks_doFirst = tasks.filter(task => task.email === email && task.priority === 'do_first');
+                const tasksColumnCount_doFirst = userTasks_doFirst.filter(task => task.column === 'tasks').length;
+                const inprocessColumnCount_doFirst = userTasks_doFirst.filter(task => task.column === 'inprocess').length;
+
+                const userTasks_doNext = tasks.filter(task => task.email === email && task.priority === 'do_next');
+                const tasksColumnCount_doNext = userTasks_doNext.filter(task => task.column === 'tasks').length;
+                const inprocessColumnCount_doNext = userTasks_doNext.filter(task => task.column === 'inprocess').length;
+
+                const userTasks_delegate = tasks.filter(task => task.email === email && task.priority === 'delegate');
+                const tasksColumnCount_delegate = userTasks_delegate.filter(task => task.column === 'tasks').length;
+                const inprocessColumnCount_delegate = userTasks_delegate.filter(task => task.column === 'inprocess').length;
+
+                const userTasks_eleminate = tasks.filter(task => task.email === email && task.priority === 'eliminate');
+                const tasksColumnCount_eleminate = userTasks_eleminate.filter(task => task.column === 'tasks').length;
+                const inprocessColumnCount_eleminate = userTasks_eleminate.filter(task => task.column === 'inprocess').length;
+
+                document.getElementById('doFirst_count').innerText = tasksColumnCount_doFirst + inprocessColumnCount_doFirst;
+                document.getElementById('doNext_count').innerText = tasksColumnCount_doNext + inprocessColumnCount_doNext;
+                document.getElementById('delegate_count').innerText = tasksColumnCount_delegate + inprocessColumnCount_delegate;
+                document.getElementById('eliminate_count').innerText = tasksColumnCount_eleminate + inprocessColumnCount_eleminate;
+            };
+
+            request.onerror = function(event) {
+                console.error("Error fetching tasks:", event.target.errorCode);
+            };
+        };
         // document.getElementById("editTaskForm").addEventListener("submit", updateTask);
 
         // document.getElementById("toggleView").addEventListener("click", function () {
@@ -270,15 +303,21 @@
             const title = document.getElementById("taskTitle").value;
             const dueDate = document.getElementById("taskDueDate").value;
             const priority = document.getElementById("taskPriority").value;
-            const column = document.getElementById("taskList").value;
+            const column = 'tasks';
+            let user = JSON.parse(sessionStorage.getItem('user'));
+            let email = user.email;
     
-            const task = { title, dueDate, priority, column };
+            const task = { title, dueDate, priority, column , email};
     
             const transaction = db.transaction(["tasks"], "readwrite");
             const objectStore = transaction.objectStore("tasks");
             const request = objectStore.add(task);
     
             request.onsuccess = function () {
+                document.getElementById("taskTitle").value = null;
+                document.getElementById("taskDueDate").value = null;
+                document.getElementById("taskPriority").value = null;
+                // document.getElementById("taskList").value = null;
                 closeAddTaskModal();
                 // loadTasks(task.priority);
                 // console.log("Done");
@@ -289,62 +328,121 @@
             };
         }
 
-        let db2;
 
+        // IndexedDB setup for users
+        let db4;
+        const request4 = indexedDB.open('UserDatabase', 1);
+
+        request4.onerror = function(event) {
+            console.error('Database error:', event.target.errorCode);
+        };
+
+        request4.onsuccess = function(event) {
+            db4 = event.target.result;
+            // console.log('User database opened successfully');
+        };
+
+        request4.onupgradeneeded = function(event) {
+            db4 = event.target.result;
+            const objectStore = db4.createObjectStore('users', { keyPath: 'email' });
+            objectStore.createIndex('password', 'password', { unique: false });
+            objectStore.createIndex('accountType', 'accountType', { unique: false });
+        };
+
+        
+
+        // IndexedDB setup for requests
+        let db2;
         const request2 = indexedDB.open("Requests", 1);
 
-        request2.onerror = function (event) {
+        request2.onerror = function(event) {
             console.error("Database error:", event.target.errorCode);
         };
 
-        request2.onsuccess = function (event) {
+        request2.onsuccess = function(event) {
             db2 = event.target.result;
-            // loadTasks(p);
+            // console.log('Requests database opened successfully');
         };
 
-        request2.onupgradeneeded = function (event) {
+        request2.onupgradeneeded = function(event) {
             db2 = event.target.result;
-            const objectStore = db2.createObjectStore("requests", {
-            keyPath: "id",
-            autoIncrement: true,
-            });
+            const objectStore = db2.createObjectStore("requests", { keyPath: "id", autoIncrement: true });
             objectStore.createIndex("sender_Email", "sender_Email", { unique: false });
-            objectStore.createIndex("reciever_Email", "reciever_Email", { unique: false });
+            objectStore.createIndex("receiver_Email", "receiver_Email", { unique: false });
             objectStore.createIndex("requestStatus", "requestStatus", { unique: false });
         };
-    
-        
+
+        // Function to open request modal
         function openRequestModal() {
             document.getElementById("requestModal").classList.remove("hidden");
         }
-    
+
+        // Function to close request modal
         function closeRequestModal() {
-        document.getElementById("requestModal").classList.add("hidden");
+            document.getElementById("requestModal").classList.add("hidden");
         }
-    
+
+        // Function to display messages
+        function displayMessage(elementId, message, type) {
+            const messageDiv = document.getElementById(elementId);
+            messageDiv.classList.remove('hidden');
+            messageDiv.classList.add('text-white');
+            messageDiv.innerText = message;
+            if (type === 'success') {
+                messageDiv.classList.remove('bg-red-500');
+                messageDiv.classList.add('bg-green-500');
+            } else {
+                messageDiv.classList.remove('bg-green-500');
+                messageDiv.classList.add('bg-red-500');
+            }
+        }
+
+        // Function to send request
         function sendRequest(event) {
             event.preventDefault();
             let user = JSON.parse(sessionStorage.getItem('user'));
             let sender_Email = user.email;
-            let reciever_Email = document.getElementById("userID").value;
+            let receiver_Email = document.getElementById("userID").value;
             let requestStatus = "pending";
-    
-            const task = { sender_Email , reciever_Email, requestStatus };
-    
-            const transaction = db2.transaction(["requests"], "readwrite");
-            const objectStore = transaction.objectStore("requests");
-            const request = objectStore.add(task);
-    
-            request.onsuccess = function () {
-                closeRequestModal();
-                // loadTasks(task.priority);
-                console.log("Done");
+
+            const transaction = db4.transaction(["users"]);
+            const objectStore = transaction.objectStore("users");
+            const request = objectStore.get(receiver_Email);
+
+            request.onsuccess = function(event) {
+                const receiver = event.target.result;
+                if (receiver) {
+                    const transaction2 = db2.transaction(["requests"], "readwrite");
+                    const objectStore2 = transaction2.objectStore("requests");
+                    const request2 = objectStore2.add({ sender_Email, receiver_Email, requestStatus });
+
+                    request2.onsuccess = function() {
+                        document.getElementById("userID").value= null;
+                        displayMessage('requestMessage', 'Request sent successfully', 'success');
+                        setTimeout(closeRequestModal, 2000);
+                    };
+
+                    request2.onerror = function(event) {
+                        document.getElementById("userID").value= null;
+                        displayMessage('requestMessage', 'Unable to send request', 'error');
+                        console.error("Error:", event.target.errorCode);
+                    };
+                } else {
+                    document.getElementById("userID").value= null;
+                    displayMessage('requestMessage', 'Receiver email not found', 'error');
+                }
             };
-    
-            request.onerror = function (event) {
+
+            request.onerror = function(event) {
+                displayMessage('requestMessage', 'Error checking receiver email', 'error');
                 console.error("Error:", event.target.errorCode);
             };
         }
+
+
+
+        // TO UPDATE PROFILE
+
         document.getElementById('profile').addEventListener('click', () => {
             document.getElementById('profileModal').classList.remove('hidden');
         });
