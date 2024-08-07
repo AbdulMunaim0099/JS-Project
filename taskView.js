@@ -82,72 +82,81 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function addTask(event) {
-    event.preventDefault();
-    const title = document.getElementById("taskTitle").value;
-    const dueDate = document.getElementById("taskDueDate").value;
-    const priority = document.getElementById("taskPriority").value;
-    const column = 'tasks';
+        event.preventDefault();
+        const title = document.getElementById("taskTitle").value;
+        const dueDate = document.getElementById("taskDueDate").value;
+        const priority = document.getElementById("taskPriority").value;
+        const column = 'tasks';
 
-    const task = { title, dueDate, priority, column };
+        let user = JSON.parse(sessionStorage.getItem('user'));
+        let email = user.email;
 
-    const transaction = db.transaction(["tasks"], "readwrite");
-    const objectStore = transaction.objectStore("tasks");
-    const request = objectStore.add(task);
+        const task = { title, dueDate, priority, column , email };
 
-    request.onsuccess = function () {
+        const transaction = db.transaction(["tasks"], "readwrite");
+        const objectStore = transaction.objectStore("tasks");
+        const request = objectStore.add(task);
+
+        request.onsuccess = function () {
+
+            closeAddTaskModal();
+            loadTasks(task.priority);
+        };
+        
+        request.onerror = function (event) {
+            console.error("Error:", event.target.errorCode);
+        };
 
         document.getElementById("taskTitle").value = null;
         document.getElementById("taskDueDate").value = null;
         document.getElementById("taskPriority").value = null;
         document.getElementById("taskList").value = null;
-        closeAddTaskModal();
-        loadTasks(task.priority);
-    };
-
-    request.onerror = function (event) {
-        console.error("Error:", event.target.errorCode);
-    };
     }
 
     function updateTask(event) {
-    event.preventDefault();
-    const id = parseInt(document.getElementById("editTaskId").value);
-    const title = document.getElementById("editTaskTitle").value;
-    const dueDate = document.getElementById("editTaskDueDate").value;
-    const priority = document.getElementById("editTaskPriority").value;
-    const column = document.getElementById("editTaskList").value;
+        event.preventDefault();
+        const id = parseInt(document.getElementById("editTaskId").value);
+        const title = document.getElementById("editTaskTitle").value;
+        const dueDate = document.getElementById("editTaskDueDate").value;
+        const priority = document.getElementById("editTaskPriority").value;
+        // const column = 'tasks';
 
-    const transaction = db.transaction(["tasks"], "readwrite");
-    const objectStore = transaction.objectStore("tasks");
-    const request = objectStore.get(id);
+        let user = JSON.parse(sessionStorage.getItem('user'));
+        let email = user.email;
 
-    request.onsuccess = function (event) {
-        const task = event.target.result;
-        task.title = title;
-        task.dueDate = dueDate;
-        task.priority = priority;
-        task.column = column;
+        const transaction = db.transaction(["tasks"], "readwrite");
+        const objectStore = transaction.objectStore("tasks");
+        const request = objectStore.get(id);
 
-        const updateRequest = objectStore.put(task);
+        request.onsuccess = function (event) {
+            const task = event.target.result;
+            task.title = title;
+            task.dueDate = dueDate;
+            task.priority = priority;
+            task.column = column;
+            task.email = email;
 
-        updateRequest.onsuccess = function () {
-            document.getElementById("editTaskId").value = null;
-            document.getElementById("editTaskTitle").value = null;
-            document.getElementById("editTaskDueDate").value = null;
-            document.getElementById("editTaskPriority").value = null;
-            document.getElementById("editTaskList").value = null;
-            closeEditTaskModal();
-            loadTasks(task.priority);
+            const updateRequest = objectStore.put(task);
+
+            updateRequest.onsuccess = function () {
+                document.getElementById("editTaskId").value = null;
+                document.getElementById("editTaskTitle").value = null;
+                document.getElementById("editTaskDueDate").value = null;
+                document.getElementById("editTaskPriority").value = null;
+                document.getElementById("editTaskList").value = null;
+                closeEditTaskModal();
+                loadTasks(task.priority);
+            };
+
+            updateRequest.onerror = function (event) {
+            console.error("Error:", event.target.errorCode);
+            };
         };
 
-        updateRequest.onerror = function (event) {
-        console.error("Error:", event.target.errorCode);
+        request.onerror = function (event) {
+            console.error("Error:", event.target.errorCode);
         };
-    };
-
-    request.onerror = function (event) {
-        console.error("Error:", event.target.errorCode);
-    };
+        location.reload();
     }
 
     function loadTasks(currentPriorityFilter) {
@@ -156,18 +165,31 @@ document.addEventListener("DOMContentLoaded", function () {
         const request = objectStore.getAll();
 
         request.onsuccess = function (event) {
-            const tasks = event.target.result;
+            let tasks = event.target.result;
+
+             // Filter tasks by the current user's email
+            let user = JSON.parse(sessionStorage.getItem('user'));
+            let email = user.email;
+
+            tasks = tasks.filter(task => task.email == email);
+
+            // Sort tasks by dueDate in ascending order
+            tasks.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+
+            // console.log(tasks);
+
 
             // Clear existing tasks
             document.getElementById("tasksContainer").innerHTML = "";
             document.getElementById("inprocessContainer").innerHTML = "";
             document.getElementById("doneContainer").innerHTML = "";
             document.getElementById("taskTableBody").innerHTML = "";
-            let user = JSON.parse(sessionStorage.getItem('user'));
-            let email = user.email;
+
+            // let user = JSON.parse(sessionStorage.getItem('user'));
+            // let email = user.email;
             let index = 0;
             tasks.forEach((task) => {
-                if (task.email == email) {
+                // if (task.email == email) {
                     
                     if (task.priority !== currentPriorityFilter) {
                         return;
@@ -238,7 +260,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
         
                     document.getElementById("taskTableBody").appendChild(rowElement);
-                }
+                // }
             });
             
         };

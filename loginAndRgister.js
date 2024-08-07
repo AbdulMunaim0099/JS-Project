@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (accountType === 'admin') {
                     window.location.href = './adminDashoard.html';
                 } else {
-                    window.location.href = './ZWith_ListAndKanban.html';
+                    window.location.href = './userDashboard.html';
                 }
             } else {
                 displayMessage('loginMessage', 'Invalid credentials', 'error');
