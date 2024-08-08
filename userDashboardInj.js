@@ -62,7 +62,8 @@ function injectEditProfileModal() {
     return `
         <!-- Edit Profile Modal -->
         <div id="editProfileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
-            <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+        <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+                <div id="editProfileMessage" > </div>
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold">Edit Profile</h2>
                     <button id="closeEditProfile" class="text-gray-600 hover:text-gray-900">&times;</button>
@@ -76,13 +77,7 @@ function injectEditProfileModal() {
                         <label class="block text-gray-700" for="editPassword">Password</label>
                         <input class="w-full p-2 border border-gray-300 rounded mt-2" type="password" id="editPassword">
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700" for="editAccountType">Account Type</label>
-                        <select class="w-full p-2 border border-gray-300 rounded mt-2" id="editAccountType" required>
-                            <option value="user">User</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                    </div>
+                    
                     <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit">Save</button>
                 </form>
             </div>

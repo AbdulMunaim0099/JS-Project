@@ -84,13 +84,7 @@ function injectEditProfileModal() {
                         <label class="block text-gray-700" for="editPassword">Password</label>
                         <input class="w-full p-2 border border-gray-300 rounded mt-2" type="password" id="editPassword">
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700" for="editAccountType">Account Type</label>
-                        <select class="w-full p-2 border border-gray-300 rounded mt-2" id="editAccountType" required>
-                            <option value="user">User</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                    </div>
+                    
                     <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit">Save</button>
                 </form>
             </div>

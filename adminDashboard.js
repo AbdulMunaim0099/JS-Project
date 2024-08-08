@@ -189,7 +189,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById('editProfile').addEventListener('click', () => {
             document.getElementById('editEmail').value = user.email;
-            document.getElementById('editAccountType').value = user.accountType;
+            // document.getElementById('editAccountType').value = user.accountType;
             document.getElementById('profileModal').classList.add('hidden');
             document.getElementById('editProfileModal').classList.remove('hidden');
         });
@@ -226,7 +226,7 @@ document.addEventListener("DOMContentLoaded", function () {
             event.preventDefault();
             const newEmail = document.getElementById('editEmail').value;
             const newPassword = document.getElementById('editPassword').value;
-            const newAccountType = document.getElementById('editAccountType').value;
+            const newAccountType = user.accountType;
             const hashedPassword = newPassword ? CryptoJS.SHA256(newPassword).toString() : user.password;
 
             const transaction = db3.transaction(['users'], 'readwrite');

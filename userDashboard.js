@@ -232,7 +232,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
         request.onsuccess = function(event) {
             const receiver = event.target.result;
-            if (receiver) {
+            // console.log(receiver.accountType);
+            if (receiver && receiver.accountType == "admin") {
                 const transaction2 = db2.transaction(["requests"], "readwrite");
                 const objectStore2 = transaction2.objectStore("requests");
                 const request2 = objectStore2.add({ sender_Email, receiver_Email, requestStatus });
@@ -282,7 +283,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById('editProfile').addEventListener('click', () => {
         document.getElementById('editEmail').value = user.email;
-        document.getElementById('editAccountType').value = user.accountType;
+        // document.getElementById('editAccountType').value = user.accountType;
         document.getElementById('profileModal').classList.add('hidden');
         document.getElementById('editProfileModal').classList.remove('hidden');
     });
@@ -319,45 +320,107 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault();
         const newEmail = document.getElementById('editEmail').value;
         const newPassword = document.getElementById('editPassword').value;
-        const newAccountType = document.getElementById('editAccountType').value;
+        const newAccountType = user.accountType;
         const hashedPassword = newPassword ? CryptoJS.SHA256(newPassword).toString() : user.password;
-
+    
         const transaction = db3.transaction(['users'], 'readwrite');
         const objectStore = transaction.objectStore('users');
-
-        // Delete the old record if the email has changed
-        if (newEmail !== user.email) {
-            objectStore.delete(user.email).onsuccess = function() {
-                const request3 = objectStore.put({ email: newEmail, password: hashedPassword, accountType: newAccountType });
-
-                request3.onsuccess = function() {
-                    sessionStorage.setItem('user', JSON.stringify({ email: newEmail, password: hashedPassword, accountType: newAccountType }));
-                    // displayMessage('editProfileMessage', 'Profile updated successfully', 'success');
-                    document.getElementById('editProfileModal').classList.add('hidden');
-                    window.location.reload();
-                };
-
-                request3.onerror = function(event) {
-                    // displayMessage('editProfileMessage', 'Unable to update profile', 'error');
-                    console.error('Error:', event.target.errorCode);
-                };
-            };
-        } else {
-            const request3 = objectStore.put({ email: newEmail, password: hashedPassword, accountType: newAccountType });
-
-            request3.onsuccess = function() {
-                sessionStorage.setItem('user', JSON.stringify({ email: newEmail, password: hashedPassword, accountType: newAccountType }));
-                // displayMessage('editProfileMessage', 'Profile updated successfully', 'success');
-                document.getElementById('editProfileModal').classList.add('hidden');
-                window.location.reload();
-            };
-
-            request3.onerror = function(event) {
-                // displayMessage('editProfileMessage', 'Unable to update profile', 'error');
-                console.error('Error:', event.target.errorCode);
-            };
-        }
+    
+        // Check if the new email already exists
+        const emailCheckRequest = objectStore.get(newEmail);
+    
+        emailCheckRequest.onsuccess = function(event) {
+            const existingUser = event.target.result;
+    
+            if (existingUser && newEmail !== user.email) {
+                // Email already exists and it's not the current user's email
+                displayMessage('editProfileMessage', 'Email already exists', 'error');
+            } else {
+                // Proceed with updating the profile
+                if (newEmail !== user.email) {
+                    // Delete the old record if the email has changed
+                    objectStore.delete(user.email).onsuccess = function() {
+                        const updateRequest = objectStore.put({ email: newEmail, password: hashedPassword, accountType: newAccountType });
+    
+                        updateRequest.onsuccess = function() {
+                            sessionStorage.setItem('user', JSON.stringify({ email: newEmail, password: hashedPassword, accountType: newAccountType }));
+                            displayMessage('editProfileMessage', 'Profile updated successfully', 'success');
+                            document.getElementById('editProfileModal').classList.add('hidden');
+                            window.location.reload();
+                        };
+    
+                        updateRequest.onerror = function(event) {
+                            displayMessage('editProfileMessage', 'Unable to update profile', 'error');
+                            console.error('Error:', event.target.errorCode);
+                        };
+                    };
+                } else {
+                    const updateRequest = objectStore.put({ email: newEmail, password: hashedPassword, accountType: newAccountType });
+    
+                    updateRequest.onsuccess = function() {
+                        sessionStorage.setItem('user', JSON.stringify({ email: newEmail, password: hashedPassword, accountType: newAccountType }));
+                        displayMessage('editProfileMessage', 'Profile updated successfully', 'success');
+                        document.getElementById('editProfileModal').classList.add('hidden');
+                        window.location.reload();
+                    };
+    
+                    updateRequest.onerror = function(event) {
+                        displayMessage('editProfileMessage', 'Unable to update profile', 'error');
+                        console.error('Error:', event.target.errorCode);
+                    };
+                }
+            }
+        };
+    
+        emailCheckRequest.onerror = function(event) {
+            console.error('Error checking email:', event.target.errorCode);
+        };
     });
+    
+
+    // document.getElementById('editProfileForm').addEventListener('submit', (event) => {
+    //     event.preventDefault();
+    //     const newEmail = document.getElementById('editEmail').value;
+    //     const newPassword = document.getElementById('editPassword').value;
+    //     const newAccountType = user.accountType;
+    //     const hashedPassword = newPassword ? CryptoJS.SHA256(newPassword).toString() : user.password;
+
+    //     const transaction = db3.transaction(['users'], 'readwrite');
+    //     const objectStore = transaction.objectStore('users');
+
+    //     // Delete the old record if the email has changed
+    //     if (newEmail !== user.email) {
+    //         objectStore.delete(user.email).onsuccess = function() {
+    //             const request3 = objectStore.put({ email: newEmail, password: hashedPassword, accountType: newAccountType });
+
+    //             request3.onsuccess = function() {
+    //                 sessionStorage.setItem('user', JSON.stringify({ email: newEmail, password: hashedPassword, accountType: newAccountType }));
+    //                 // displayMessage('editProfileMessage', 'Profile updated successfully', 'success');
+    //                 document.getElementById('editProfileModal').classList.add('hidden');
+    //                 window.location.reload();
+    //             };
+
+    //             request3.onerror = function(event) {
+    //                 // displayMessage('editProfileMessage', 'Unable to update profile', 'error');
+    //                 console.error('Error:', event.target.errorCode);
+    //             };
+    //         };
+    //     } else {
+    //         const request3 = objectStore.put({ email: newEmail, password: hashedPassword, accountType: newAccountType });
+
+    //         request3.onsuccess = function() {
+    //             sessionStorage.setItem('user', JSON.stringify({ email: newEmail, password: hashedPassword, accountType: newAccountType }));
+    //             // displayMessage('editProfileMessage', 'Profile updated successfully', 'success');
+    //             document.getElementById('editProfileModal').classList.add('hidden');
+    //             window.location.reload();
+    //         };
+
+    //         request3.onerror = function(event) {
+    //             // displayMessage('editProfileMessage', 'Unable to update profile', 'error');
+    //             console.error('Error:', event.target.errorCode);
+    //         };
+    //     }
+    // });
 });
 
 
