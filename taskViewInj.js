@@ -84,7 +84,7 @@ function injectAddTaskModal() {
                         <label class="block text-gray-700" for="taskDueDate">Due Date</label>
                         <input class="w-full p-2 border border-gray-300 rounded mt-2" type="date" id="taskDueDate" required />
                     </div>
-                    <div class="mb-4">
+                    <!-- <div class="mb-4">
                         <label class="block text-gray-700" for="taskPriority">Priority</label>
                         <select class="w-full p-2 border border-gray-300 rounded mt-2" id="taskPriority" required>
                             <option value="do_first">Do First</option>
@@ -92,7 +92,7 @@ function injectAddTaskModal() {
                             <option value="delegate">Delegate</option>
                             <option value="eliminate">Eliminate</option>
                         </select>
-                    </div>
+                    </div> -->
                     <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit">Add</button>
                 </form>
             </div>
@@ -119,7 +119,7 @@ function injectEditTaskModal() {
                         <label class="block text-gray-700" for="editTaskDueDate">Due Date</label>
                         <input class="w-full p-2 border border-gray-300 rounded mt-2" type="date" id="editTaskDueDate" required/>
                     </div>
-                    <div class="mb-4">
+                    <!-- <div class="mb-4">
                         <label class="block text-gray-700" for="editTaskPriority">Priority</label>
                         <select class="w-full p-2 border border-gray-300 rounded mt-2" id="editTaskPriority" required>
                             <option value="do_first">Do First</option>
@@ -127,7 +127,7 @@ function injectEditTaskModal() {
                             <option value="delegate">Delegate</option>
                             <option value="eliminate">Eliminate</option>
                         </select>
-                    </div>
+                    </div> -->
                     <div class="mb-4">
                         <label class="block text-gray-700" for="editTaskList">List</label>
                         <select class="w-full p-2 border border-gray-300 rounded mt-2" id="editTaskList" required>

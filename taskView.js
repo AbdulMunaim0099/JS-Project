@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("editTaskId").value = task.id;
         document.getElementById("editTaskTitle").value = task.title;
         document.getElementById("editTaskDueDate").value = task.dueDate;
-        document.getElementById("editTaskPriority").value = task.priority;
+        // document.getElementById("editTaskPriority").value = task.priority;
         // document.getElementById("editTaskList").value = task.column;
         document.getElementById("editTaskModal").classList.remove("hidden");
     }
@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault();
         const title = document.getElementById("taskTitle").value;
         const dueDate = document.getElementById("taskDueDate").value;
-        const priority = document.getElementById("taskPriority").value;
+        const priority = p;
         const column = 'tasks';
 
         let user = JSON.parse(sessionStorage.getItem('user'));
@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         document.getElementById("taskTitle").value = null;
         document.getElementById("taskDueDate").value = null;
-        document.getElementById("taskPriority").value = null;
+        // document.getElementById("taskPriority").value = null;
         // document.getElementById("taskList").value = null;
     }
 
@@ -151,8 +151,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const id = parseInt(document.getElementById("editTaskId").value);
         const title = document.getElementById("editTaskTitle").value;
         const dueDate = document.getElementById("editTaskDueDate").value;
-        const priority = document.getElementById("editTaskPriority").value;
-        // const column = 'tasks';
+        // const priority = document.getElementById("editTaskPriority").value;
+        const priority = p;
+        const column = document.getElementById("editTaskList").value;
 
         let user = JSON.parse(sessionStorage.getItem('user'));
         let email = user.email;
@@ -175,8 +176,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("editTaskId").value = null;
                 document.getElementById("editTaskTitle").value = null;
                 document.getElementById("editTaskDueDate").value = null;
-                document.getElementById("editTaskPriority").value = null;
-                document.getElementById("editTaskList").value = null;
+                // document.getElementById("editTaskPriority").value = null;
+                // document.getElementById("editTaskList").value = null;
                 closeEditTaskModal();
                 loadTasks(task.priority);
             };
