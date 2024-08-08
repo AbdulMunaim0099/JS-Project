@@ -5,6 +5,30 @@ let db;
 
 document.addEventListener("DOMContentLoaded", function () {
 
+    let currentView = localStorage.getItem('taskView');
+    if (currentView) {
+
+        const kanbanView = document.getElementById("kanbanView");
+        const listView = document.getElementById("listView");
+
+        if (currentView == 'list') {
+            kanbanView.classList.add("hidden");
+            listView.classList.remove("hidden");
+            this.textContent = "Switch to Kanban";
+        }
+        else{
+
+            kanbanView.classList.remove("hidden");
+            listView.classList.add("hidden");
+            this.textContent = "Switch to List";
+        }
+        // console.log(currentView);
+    }
+    else{
+        
+        localStorage.setItem('taskView', 'list');
+    }
+
     let user = JSON.parse(sessionStorage.getItem('user'));
     if (!user) {
         window.location.href = './loginAndRgister.html';
@@ -48,14 +72,23 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("toggleView").addEventListener("click", function () {
         const kanbanView = document.getElementById("kanbanView");
         const listView = document.getElementById("listView");
+
         if (kanbanView.classList.contains("hidden")) {
+
             kanbanView.classList.remove("hidden");
             listView.classList.add("hidden");
             this.textContent = "Switch to List";
+
+            localStorage.setItem('taskView', 'kanban');
+            // console.log(localStorage.getItem('taskView'));
         } else {
+
             kanbanView.classList.add("hidden");
             listView.classList.remove("hidden");
             this.textContent = "Switch to Kanban";
+
+            localStorage.setItem('taskView', 'list');
+            // console.log(localStorage.getItem('taskView'));
         }
     });
 });
@@ -110,7 +143,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("taskTitle").value = null;
         document.getElementById("taskDueDate").value = null;
         document.getElementById("taskPriority").value = null;
-        document.getElementById("taskList").value = null;
+        // document.getElementById("taskList").value = null;
     }
 
     function updateTask(event) {
@@ -160,6 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function loadTasks(currentPriorityFilter) {
+        // console.log("123");
         const transaction = db.transaction(["tasks"], "readonly");
         const objectStore = transaction.objectStore("tasks");
         const request = objectStore.getAll();
@@ -247,14 +281,13 @@ document.addEventListener("DOMContentLoaded", function () {
                             </td>
                         `;
         
+                        // console.log("done");
                     if (task.column === "tasks") {
-                        document
-                        .getElementById("tasksContainer")
-                        .appendChild(taskElement);
+
+                        document.getElementById("tasksContainer").appendChild(taskElement);
                     } else if (task.column === "inprocess") {
-                        document
-                        .getElementById("inprocessContainer")
-                        .appendChild(taskElement);
+
+                        document.getElementById("inprocessContainer").appendChild(taskElement);
                     } else if (task.column === "done") {
                         document.getElementById("doneContainer").appendChild(taskElement);
                     }
@@ -301,61 +334,61 @@ document.addEventListener("DOMContentLoaded", function () {
     // }
 // console.log("qqqq");
     function allowDrop(event) {
-    event.preventDefault();
+        event.preventDefault();
     }
 
     function drop(event) {
-    event.preventDefault();
-    const taskId = parseInt(event.dataTransfer.getData("text"));
-    const column = event.target.id;
+        event.preventDefault();
+        const taskId = parseInt(event.dataTransfer.getData("text"));
+        const column = event.target.id;
 
-    if (!["tasks", "inprocess", "done"].includes(column)) return;
+        if (!["tasks", "inprocess", "done"].includes(column)) return;
 
-    const transaction = db.transaction(["tasks"], "readwrite");
-    const objectStore = transaction.objectStore("tasks");
-    const request = objectStore.get(taskId);
+        const transaction = db.transaction(["tasks"], "readwrite");
+        const objectStore = transaction.objectStore("tasks");
+        const request = objectStore.get(taskId);
 
-    request.onsuccess = function (event) {
-        const task = event.target.result;
-        task.column = column;
+        request.onsuccess = function (event) {
+            const task = event.target.result;
+            task.column = column;
 
-        const updateRequest = objectStore.put(task);
+            const updateRequest = objectStore.put(task);
 
-        updateRequest.onsuccess = function () {
-            loadTasks(task.priority);
+            updateRequest.onsuccess = function () {
+                loadTasks(task.priority);
+            };
+
+            updateRequest.onerror = function (event) {
+            console.error("Error:", event.target.errorCode);
+            };
         };
 
-        updateRequest.onerror = function (event) {
-        console.error("Error:", event.target.errorCode);
+        request.onerror = function (event) {
+            console.error("Error:", event.target.errorCode);
         };
-    };
-
-    request.onerror = function (event) {
-        console.error("Error:", event.target.errorCode);
-    };
     }
 
     function deleteTask(id) {
-    const transaction = db.transaction(["tasks"], "readwrite");
-    const objectStore = transaction.objectStore("tasks");
-    const getTask = objectStore.get(id);
-    // 
-    let task
-    getTask.onsuccess = function (event) {
-        
-        task = event.target.result;
-        task = task.priority;
-    };
-    // 
-    const request = objectStore.delete(id);
+        const transaction = db.transaction(["tasks"], "readwrite");
+        const objectStore = transaction.objectStore("tasks");
+        const getTask = objectStore.get(id);
+        // 
+        let task
+        getTask.onsuccess = function (event) {
+            
+            task = event.target.result;
+            task = task.priority;
+        };
+        // 
+        const request = objectStore.delete(id);
 
-    request.onsuccess = function () {
-        loadTasks(task);
-    };
+        request.onsuccess = function () {
+            loadTasks(task);
+        };
 
-    request.onerror = function (event) {
-        console.error("Error:", event.target.errorCode);
-    };
+        request.onerror = function (event) {
+            console.error("Error:", event.target.errorCode);
+        };
     }
 
     document.addEventListener('dragstart', function(event) {
