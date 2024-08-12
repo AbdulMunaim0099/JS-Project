@@ -256,6 +256,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         `;
         
                     const rowElement = document.createElement("tr");
+                    // rowElement.className=""
                     rowElement.innerHTML = `
                             <td class="py-2 px-4 border-b border-gray-200">${
                                 task.id
@@ -272,7 +273,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             <td class="py-2 px-4 border-b border-gray-200">${
                                 task.column
                             }</td>
-                            <td class="py-2 px-4 border-b border-gray-200">
+                            <td class="py-2 px-4 border-b border-gray-200 flex">
                                 <button class="bg-blue-500 text-white px-2 py-1 rounded mr-2" onclick='openEditTaskModal(${JSON.stringify(
                                     task
                                 )})'>Update</button>

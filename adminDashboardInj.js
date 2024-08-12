@@ -2,9 +2,9 @@ function injectNavbar() {
     return `
         <!-- Navbar -->
         <nav class="bg-blue-500 p-4">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row gap-4 md:gap-0 justify-between items-center">
                 <span class="text-white text-lg font-bold">Task Manager</span>
-                <div>
+                <div class="flex flex-row gap-1" >
                     <button id="requestDisplay" class="bg-blue-700 text-white px-4 py-2 rounded mr-2">Requests</button>
                     <button id="profile" class="bg-blue-700 text-white px-4 py-2 rounded mr-2">Profile</button>
                     <button id="logout" class="bg-red-500 text-white px-4 py-2 rounded">Logout</button>
