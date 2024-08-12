@@ -60,28 +60,32 @@ function injectProfileModal() {
 
 function injectEditProfileModal() {
     return `
-        <!-- Edit Profile Modal -->
-        <div id="editProfileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center">
         <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
-                <div id="editProfileMessage" > </div>
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold">Edit Profile</h2>
-                    <button id="closeEditProfile" class="text-gray-600 hover:text-gray-900">&times;</button>
-                </div>
-                <form id="editProfileForm">
-                    <div class="mb-4">
-                        <label class="block text-gray-700" for="editEmail">Email</label>
-                        <input class="w-full p-2 border border-gray-300 rounded mt-2" type="email" id="editEmail" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-gray-700" for="editPassword">Password</label>
-                        <input class="w-full p-2 border border-gray-300 rounded mt-2" type="password" id="editPassword">
-                    </div>
-                    
-                    <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit">Save</button>
-                </form>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Edit Profile</h2>
+                <button id="closeEditProfile" class="text-gray-600 hover:text-gray-900">&times;</button>
             </div>
+            <form id="editProfileForm">
+                <div id="editProfileMessage" class="hidden text-center"> </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700" for="oldEmail">Old Email</label>
+                    <input class="w-full p-2 border border-gray-300 rounded mt-2" type="email" id="oldEmail" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700" for="editEmail">Email</label>
+                    <input class="w-full p-2 border border-gray-300 rounded mt-2" type="email" id="editEmail" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700" for="editPassword">Password</label>
+                    <input class="w-full p-2 border border-gray-300 rounded mt-2" type="password" id="editPassword" required>
+                </div>
+                
+                <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit">Save</button>
+            </form>
         </div>
+    </div>
     `;
 }
 

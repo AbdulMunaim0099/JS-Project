@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     request.onupgradeneeded = function(event) {
         db = event.target.result;
         const objectStore = db.createObjectStore('users', { keyPath: 'email' });
+        objectStore.createIndex('email', 'email', { unique: false });
         objectStore.createIndex('password', 'password', { unique: false });
         objectStore.createIndex('accountType', 'accountType', { unique: false });
     };

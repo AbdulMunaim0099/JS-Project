@@ -76,13 +76,18 @@ function injectEditProfileModal() {
                     <button id="closeEditProfile" class="text-gray-600 hover:text-gray-900">&times;</button>
                 </div>
                 <form id="editProfileForm">
+                    <div id="editProfileMessage" class="hidden text-center"> </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700" for="oldEmail">Old Email</label>
+                        <input class="w-full p-2 border border-gray-300 rounded mt-2" type="email" id="oldEmail" required>
+                    </div>
                     <div class="mb-4">
                         <label class="block text-gray-700" for="editEmail">Email</label>
                         <input class="w-full p-2 border border-gray-300 rounded mt-2" type="email" id="editEmail" required>
                     </div>
                     <div class="mb-4">
                         <label class="block text-gray-700" for="editPassword">Password</label>
-                        <input class="w-full p-2 border border-gray-300 rounded mt-2" type="password" id="editPassword">
+                        <input class="w-full p-2 border border-gray-300 rounded mt-2" type="password" id="editPassword" required>
                     </div>
                     
                     <button class="w-full bg-blue-500 text-white py-2 rounded" type="submit">Save</button>

@@ -127,7 +127,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const requestTransaction = db.transaction(['requests'], 'readonly');
         const requestObjectStore = requestTransaction.objectStore('requests');
-        const requestQuery = requestObjectStore.index('reciever_Email').getAll(email);
+        const requestQuery = requestObjectStore.index('receiver_Email').getAll(email);
 
         requestQuery.onsuccess = function(event) {
             const userRequests = event.target.result;
@@ -188,14 +188,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     document.getElementById('editProfile').addEventListener('click', () => {
-            document.getElementById('editEmail').value = user.email;
+            document.getElementById('oldEmail').value = user.email;
             // document.getElementById('editAccountType').value = user.accountType;
             document.getElementById('profileModal').classList.add('hidden');
             document.getElementById('editProfileModal').classList.remove('hidden');
         });
 
-        document.getElementById('closeEditProfile').addEventListener('click', () => {
+        let closeEditModal = () =>{
+
             document.getElementById('editProfileModal').classList.add('hidden');
+            document.getElementById('oldEmail').value = null;
+            document.getElementById('editEmail').value = null;
+            document.getElementById('editPassword').value = null;
+        }
+        document.getElementById('closeEditProfile').addEventListener('click', () => {
+            closeEditModal();
         });
 
         document.getElementById('editProfileModal').addEventListener('click', (event) => {
@@ -222,25 +229,85 @@ document.addEventListener("DOMContentLoaded", function () {
             objectStore.createIndex('accountType', 'accountType', { unique: false });
         };
 
+        // Function to display messages
+        function displayMessage(elementId, message, type) {
+            const messageDiv = document.getElementById(elementId);
+            messageDiv.classList.remove('hidden');
+            messageDiv.classList.add('text-white');
+            messageDiv.innerText = message;
+            if (type === 'success') {
+                messageDiv.classList.remove('bg-red-500');
+                messageDiv.classList.add('bg-green-500');
+            } else {
+                messageDiv.classList.remove('bg-green-500');
+                messageDiv.classList.add('bg-red-500');
+            }
+        }
+
         document.getElementById('editProfileForm').addEventListener('submit', (event) => {
             event.preventDefault();
+        
+            // Check if the user is logged in
+            const loggedInUser = JSON.parse(sessionStorage.getItem('user'));
+            if (!loggedInUser) {
+                console.error('User not logged in');
+                return;
+            }
+        
+            const oldEmail = document.getElementById('oldEmail').value;
             const newEmail = document.getElementById('editEmail').value;
             const newPassword = document.getElementById('editPassword').value;
-            const newAccountType = user.accountType;
-            const hashedPassword = newPassword ? CryptoJS.SHA256(newPassword).toString() : user.password;
-
+            const newAccountType = loggedInUser.accountType;
+            const hashedPassword = newPassword ? CryptoJS.SHA256(newPassword).toString() : loggedInUser.password;
+        
+            // Check if the user trying to update is the same as the logged-in user
+            if (oldEmail !== loggedInUser.email) {
+                displayMessage('editProfileMessage', 'User attempting to update a different profile', 'error');
+                return;
+            }
+        
             const transaction = db3.transaction(['users'], 'readwrite');
             const objectStore = transaction.objectStore('users');
+        
+            // Check if the new email already exists in the database, excluding the current user
+            const index = objectStore.index('email'); // Assuming 'email' is an index on the 'users' object store
+            const getRequest = index.get(newEmail);
+            
+            getRequest.onsuccess = function(event) {
+                const existingUser = event.target.result;
+        
+                if (existingUser && existingUser.email !== loggedInUser.email) {
+                    // New email already exists and is not the current user's email
+                    displayMessage('editProfileMessage', 'Email is already in use', 'error');
+                    return;
+                }
+        
+                // Delete the old record if the email has changed
+                if (newEmail !== user.email) {
+                    objectStore.delete(user.email).onsuccess = function() {
+                        const request3 = objectStore.put({ email: newEmail, password: hashedPassword, accountType: newAccountType });
 
-            // Delete the old record if the email has changed
-            if (newEmail !== user.email) {
-                objectStore.delete(user.email).onsuccess = function() {
+                        request3.onsuccess = function() {
+                            sessionStorage.setItem('user', JSON.stringify({ email: newEmail, password: hashedPassword, accountType: newAccountType }));
+                            // displayMessage('editProfileMessage', 'Profile updated successfully', 'success');
+                            // document.getElementById('editProfileModal').classList.add('hidden');
+                            closeEditModal();
+                            window.location.reload();
+                        };
+
+                        request3.onerror = function(event) {
+                            // displayMessage('editProfileMessage', 'Unable to update profile', 'error');
+                            console.error('Error:', event.target.errorCode);
+                        };
+                    };
+                } else {
                     const request3 = objectStore.put({ email: newEmail, password: hashedPassword, accountType: newAccountType });
 
                     request3.onsuccess = function() {
                         sessionStorage.setItem('user', JSON.stringify({ email: newEmail, password: hashedPassword, accountType: newAccountType }));
                         // displayMessage('editProfileMessage', 'Profile updated successfully', 'success');
-                        document.getElementById('editProfileModal').classList.add('hidden');
+                        // document.getElementById('editProfileModal').classList.add('hidden');
+                        closeEditModal();
                         window.location.reload();
                     };
 
@@ -248,22 +315,57 @@ document.addEventListener("DOMContentLoaded", function () {
                         // displayMessage('editProfileMessage', 'Unable to update profile', 'error');
                         console.error('Error:', event.target.errorCode);
                     };
-                };
-            } else {
-                const request3 = objectStore.put({ email: newEmail, password: hashedPassword, accountType: newAccountType });
-
-                request3.onsuccess = function() {
-                    sessionStorage.setItem('user', JSON.stringify({ email: newEmail, password: hashedPassword, accountType: newAccountType }));
-                    // displayMessage('editProfileMessage', 'Profile updated successfully', 'success');
-                    document.getElementById('editProfileModal').classList.add('hidden');
-                    window.location.reload();
-                };
-
-                request3.onerror = function(event) {
-                    // displayMessage('editProfileMessage', 'Unable to update profile', 'error');
-                    console.error('Error:', event.target.errorCode);
-                };
-            }
+                }
+            };
+        
+            getRequest.onerror = function(event) {
+                console.error('Error fetching email:', event.target.errorCode);
+            };
         });
+              
+
+        // document.getElementById('editProfileForm').addEventListener('submit', (event) => {
+        //     event.preventDefault();
+        //     const newEmail = document.getElementById('editEmail').value;
+        //     const newPassword = document.getElementById('editPassword').value;
+        //     const newAccountType = user.accountType;
+        //     const hashedPassword = newPassword ? CryptoJS.SHA256(newPassword).toString() : user.password;
+
+        //     const transaction = db3.transaction(['users'], 'readwrite');
+        //     const objectStore = transaction.objectStore('users');
+
+        //     // Delete the old record if the email has changed
+        //     if (newEmail !== user.email) {
+        //         objectStore.delete(user.email).onsuccess = function() {
+        //             const request3 = objectStore.put({ email: newEmail, password: hashedPassword, accountType: newAccountType });
+
+        //             request3.onsuccess = function() {
+        //                 sessionStorage.setItem('user', JSON.stringify({ email: newEmail, password: hashedPassword, accountType: newAccountType }));
+        //                 // displayMessage('editProfileMessage', 'Profile updated successfully', 'success');
+        //                 document.getElementById('editProfileModal').classList.add('hidden');
+        //                 window.location.reload();
+        //             };
+
+        //             request3.onerror = function(event) {
+        //                 // displayMessage('editProfileMessage', 'Unable to update profile', 'error');
+        //                 console.error('Error:', event.target.errorCode);
+        //             };
+        //         };
+        //     } else {
+        //         const request3 = objectStore.put({ email: newEmail, password: hashedPassword, accountType: newAccountType });
+
+        //         request3.onsuccess = function() {
+        //             sessionStorage.setItem('user', JSON.stringify({ email: newEmail, password: hashedPassword, accountType: newAccountType }));
+        //             // displayMessage('editProfileMessage', 'Profile updated successfully', 'success');
+        //             document.getElementById('editProfileModal').classList.add('hidden');
+        //             window.location.reload();
+        //         };
+
+        //         request3.onerror = function(event) {
+        //             // displayMessage('editProfileMessage', 'Unable to update profile', 'error');
+        //             console.error('Error:', event.target.errorCode);
+        //         };
+        //     }
+        // });
 
 });
