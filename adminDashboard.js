@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
         db = event.target.result;
         if (!db.objectStoreNames.contains('requests')) {
             const objectStore = db.createObjectStore('requests', { keyPath: 'id', autoIncrement: true });
+            // objectStore.createIndex('sender_Email', 'sender_Email', { unique: false });
             objectStore.createIndex('requestStatus', 'requestStatus', { unique: false });
             objectStore.createIndex('receiver_Email', 'receiver_Email', { unique: false });
         }

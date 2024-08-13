@@ -14,13 +14,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (currentView == 'list') {
             kanbanView.classList.add("hidden");
             listView.classList.remove("hidden");
-            this.textContent = "Switch to Kanban";
+            document.getElementById("toggleView").textContent = "Switch to Kanban";
         }
         else{
 
             kanbanView.classList.remove("hidden");
             listView.classList.add("hidden");
-            this.textContent = "Switch to List";
+            document.getElementById("toggleView").textContent = "Switch to List";
         }
         // console.log(currentView);
     }
@@ -60,6 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
         objectStore.createIndex("dueDate", "dueDate", { unique: false });
         objectStore.createIndex("priority", "priority", { unique: false });
         objectStore.createIndex("column", "column", { unique: false });
+        objectStore.createIndex("email", "email", { unique: false });
     };
 
     document.getElementById("addTask").addEventListener("click", openAddTaskModal);

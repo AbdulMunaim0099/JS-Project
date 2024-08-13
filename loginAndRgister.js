@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     request.onsuccess = function(event) {
         db = event.target.result;
-        console.log('Database opened successfully');
+        // console.log('Database opened successfully');
     };
 
     request.onupgradeneeded = function(event) {
